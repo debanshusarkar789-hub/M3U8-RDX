@@ -3,266 +3,388 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>rdxdebanshu@7 M3U8 Player</title>
-    <!-- Load Tailwind CSS -->
+    <title>RDXDS LIVE | Pro HLS Player</title>
+    
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Load Inter Font -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
-    <!-- Load HLS.js Library -->
+    
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Orbitron:wght@500;700;900&display=swap" rel="stylesheet">
+    
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
 
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        cyber: {
+                            black: '#050505',
+                            dark: '#0f172a',
+                            panel: '#1e293b',
+                            blue: '#00f3ff', // Cyan Neon
+                            red: '#ff003c',  // Cyberpunk Red
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        tech: ['Orbitron', 'sans-serif'],
+                    },
+                    animation: {
+                        'pulse-fast': 'pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                    }
+                }
+            }
+        }
+    </script>
+
     <style>
-        /* Define Colors */
-        :root {
-            --royal-blue: #4169E1;
-            --royal-shadow: rgba(65, 105, 225, 0.5);
-            --neon-red: #FF073A; /* Bright Red/Crimson */
-        }
-
-        /* Custom styles to apply the Inter font globally */
         body {
-            font-family: 'Inter', sans-serif;
-            background-color: #000000; /* Pure black background */
-        }
-        .player-container {
-            width: 100%;
-            max-width: 900px;
-            margin: 0 auto;
-            /* Royal Blue shadow effect */
-            box-shadow: 0 0 40px var(--royal-shadow);
-            border: 1px solid var(--royal-blue);
-            border-radius: 1rem;
-            overflow: hidden;
-            background-color: #111827; /* Darker interior for contrast */
-        }
-        video {
-            display: block;
-            width: 100%;
-            background-color: #000;
-        }
-        
-        /* Royal Blue Accent Class */
-        .royal-blue-accent {
-            background-color: var(--royal-blue);
-            color: #FFFFFF;
-        }
-
-        /* Control Button Styling */
-        .custom-controls button {
-            transition: background-color 0.15s, transform 0.1s, box-shadow 0.15s;
-            font-weight: 700;
-        }
-        .custom-controls button:hover {
-            background-color: rgba(65, 105, 225, 0.8); /* Darker royal blue hover */
-            transform: translateY(-2px);
-            box-shadow: 0 4px 10px rgba(65, 105, 225, 0.7);
-        }
-
-        /* --- Neon Red Live Indicator Animation --- */
-        @keyframes pulse-live {
-            0% { opacity: 1; box-shadow: 0 0 0 0px var(--neon-red); }
-            50% { opacity: 0.8; box-shadow: 0 0 10px 4px rgba(255, 7, 58, 0.6); }
-            100% { opacity: 1; box-shadow: 0 0 0 0px var(--neon-red); }
-        }
-
-        .live-indicator {
-            display: flex;
-            align-items: center;
-            font-weight: 900;
-            background-color: var(--neon-red);
+            background-color: #020204;
+            background-image: 
+                radial-gradient(circle at 50% 0%, rgba(0, 243, 255, 0.1) 0%, transparent 50%),
+                linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+            background-size: 100% 100%, 40px 40px, 40px 40px;
             color: white;
-            padding: 2px 8px;
+            overflow-x: hidden;
+        }
+
+        /* Glassmorphism Panel */
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 0 40px rgba(0, 0, 0, 0.7);
+        }
+
+        /* Neon Glows */
+        .glow-blue {
+            box-shadow: 0 0 15px rgba(0, 243, 255, 0.3);
+        }
+        .glow-text {
+            text-shadow: 0 0 10px rgba(0, 243, 255, 0.5);
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0f172a;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #334155;
             border-radius: 4px;
-            border: 1px solid white;
-            text-shadow: 0 0 6px white; /* Inner glow effect for text */
-            box-shadow: 0 0 8px var(--neon-red); /* Base neon glow */
-            animation: pulse-live 1.5s infinite;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #00f3ff;
+        }
+
+        /* Toast Animation */
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        .toast {
+            animation: slideIn 0.3s ease-out forwards;
         }
     </style>
 </head>
-<body class="min-h-screen flex items-center justify-center p-4">
+<body class="min-h-screen flex flex-col items-center justify-center p-4 sm:p-6 lg:p-8">
 
-    <div class="player-container">
-        <!-- Player Title with Live Indicator -->
-        <header class="p-4 text-center text-xl md:text-2xl royal-blue-accent font-extrabold">
-            <div class="flex justify-center items-center space-x-4">
-                <h1 class="tracking-widest" style="font-weight: 900;">rdxdebanshu@7</h1>
-                <span class="live-indicator text-xs">LIVE</span>
-            </div>
-        </header>
-
-        <!-- Video Element -->
-        <video id="video" controls></video>
-
-        <!-- Stream Input and Control Panel -->
-        <div class="p-4 space-y-4">
-            <!-- Removed the 'value' attribute here -->
-            <input type="text" id="streamUrl" placeholder="Enter M3U8 Stream URL here"
-                   class="w-full p-3 rounded-lg border-2 border-gray-700 bg-gray-900 text-white placeholder-gray-500 focus:outline-none focus:border-[var(--royal-blue)] focus:ring-1 focus:ring-[var(--royal-blue)] transition">
-
-            <div class="flex flex-col sm:flex-row justify-center space-y-2 sm:space-y-0 sm:space-x-4 custom-controls">
-                <button id="loadButton" class="w-full sm:w-1/2 p-3 rounded-lg text-white royal-blue-accent hover:bg-blue-700 transition duration-300 shadow-md">
-                    Load Stream
-                </button>
-                <button id="messageBoxClose" class="w-full sm:w-1/2 p-3 rounded-lg text-white font-bold bg-gray-600 hover:bg-gray-700 transition duration-300 shadow-md" style="display: none;">
-                    Close Status Message
-                </button>
+    <div class="w-full max-w-5xl glass-panel rounded-2xl overflow-hidden relative border-t border-cyan-500/30">
+        
+        <div class="flex flex-col md:flex-row justify-between items-center p-5 border-b border-white/5 bg-black/20">
+            <div class="flex items-center gap-3 mb-4 md:mb-0">
+                <i class="fa-solid fa-satellite-dish text-cyber-blue text-2xl animate-pulse"></i>
+                <h1 class="font-tech text-2xl tracking-wider font-bold">
+                    RDX<span class="text-cyber-blue">STREAM</span>
+                </h1>
             </div>
             
-            <!-- Message Box for status/errors -->
-            <div id="messageBox" class="hidden p-3 rounded-lg text-center font-semibold text-sm transition-opacity duration-300"></div>
+            <div class="flex items-center gap-4">
+                <div id="hls-status-pill" class="hidden px-3 py-1 rounded-full text-xs font-mono border border-gray-700 text-gray-400 bg-gray-900/50">
+                    <i class="fa-solid fa-circle-notch fa-spin mr-2"></i>Initializing
+                </div>
+                <div id="live-indicator" class="hidden items-center gap-2 px-3 py-1 bg-cyber-red/10 border border-cyber-red/50 rounded text-cyber-red font-bold text-xs tracking-widest shadow-[0_0_10px_rgba(255,0,60,0.3)]">
+                    <span class="w-2 h-2 bg-cyber-red rounded-full animate-pulse-fast"></span> LIVE
+                </div>
+            </div>
+        </div>
 
-            <!-- Library Status Indicator -->
-            <div id="status" class="text-center text-xs text-gray-400 mt-2">
-                HLS.js Status: <span id="hlsStatus" class="text-red-400">Loading...</span>
+        <div class="relative w-full bg-black group">
+            <div class="aspect-video w-full relative flex items-center justify-center bg-black/50">
+                <video id="video" class="w-full h-full object-contain" controls poster="https://via.placeholder.com/1920x1080/000000/00f3ff?text=RDX+STREAM+READY"></video>
+                
+                <div id="video-placeholder" class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-10 transition-opacity duration-500">
+                    <i class="fa-solid fa-play-circle text-6xl text-white/20"></i>
+                    <p class="mt-4 text-white/30 font-mono text-sm">WAITING FOR SIGNAL...</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="p-6 space-y-6">
+            
+            <div class="flex flex-col md:flex-row gap-3">
+                <div class="relative flex-grow group">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <i class="fa-solid fa-link text-gray-500 group-focus-within:text-cyber-blue transition-colors"></i>
+                    </div>
+                    <input type="text" id="streamUrl" 
+                        class="w-full pl-10 pr-4 py-3 bg-gray-900/50 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-cyber-blue focus:ring-1 focus:ring-cyber-blue transition-all font-mono text-sm shadow-inner"
+                        placeholder="Paste M3U8 URL here...">
+                    <button id="clearInput" class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500 hover:text-white transition-colors cursor-pointer hidden">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+                
+                <div class="relative min-w-[140px]">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <i class="fa-solid fa-sliders text-gray-400"></i>
+                    </div>
+                    <select id="qualitySelect" disabled
+                        class="w-full pl-9 pr-8 py-3 bg-gray-900/50 border border-gray-700 rounded-lg text-white appearance-none focus:outline-none focus:border-cyber-blue transition-all cursor-pointer font-mono text-sm disabled:opacity-50 disabled:cursor-not-allowed">
+                        <option value="-1">Auto (Adapt)</option>
+                    </select>
+                    <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                        <i class="fa-solid fa-chevron-down text-xs text-gray-500"></i>
+                    </div>
+                </div>
+
+                <button id="loadButton" class="bg-cyber-blue text-black font-bold py-3 px-6 rounded-lg hover:bg-white hover:scale-105 active:scale-95 transition-all duration-200 shadow-[0_0_15px_rgba(0,243,255,0.4)] flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-bolt"></i> LOAD
+                </button>
+            </div>
+
+            <div>
+                <p class="text-xs text-gray-500 font-mono mb-2 uppercase tracking-wider">Test Channels</p>
+                <div class="flex flex-wrap gap-2">
+                    <button onclick="quickLoad('https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8')" 
+                        class="px-3 py-1.5 bg-gray-800 hover:bg-gray-700 border border-gray-700 rounded text-xs text-gray-300 transition-colors flex items-center gap-2">
+                        <i class="fa-solid fa-film"></i> Big Buck Bunny
+                    </button>
+                    <button onclick="quickLoad('https://playertest.longtailvideo.com/adaptive/wowzaid3/playlist.m3u8')" 
+                        class="px-3 py-1.5 bg-gray-800 hover:bg-gray-700 border border-gray-700 rounded text-xs text-gray-300 transition-colors flex items-center gap-2">
+                        <i class="fa-solid fa-music"></i> Audio Metadata Test
+                    </button>
+                    <button onclick="quickLoad('https://cph-p2p-msl.akamaized.net/hls/live/2000341/test/master.m3u8')" 
+                        class="px-3 py-1.5 bg-gray-800 hover:bg-gray-700 border border-gray-700 rounded text-xs text-gray-300 transition-colors flex items-center gap-2">
+                        <i class="fa-solid fa-tower-broadcast"></i> Akamai Live
+                    </button>
+                </div>
+            </div>
+
+            <div class="border-t border-gray-800 pt-4 flex justify-between items-center text-xs text-gray-500 font-mono">
+                <span id="engine-status">Engine: Idle</span>
+                <span>rdxdebanshu@7 v2.0</span>
             </div>
         </div>
     </div>
 
+    <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-3 pointer-events-none"></div>
+
     <script>
+        // DOM Elements
         const video = document.getElementById('video');
         const streamUrlInput = document.getElementById('streamUrl');
         const loadButton = document.getElementById('loadButton');
-        const hlsStatus = document.getElementById('hlsStatus');
-        const messageBox = document.getElementById('messageBox');
-        const messageBoxClose = document.getElementById('messageBoxClose');
-        const ROYAL_BLUE = '#4169E1';
+        const qualitySelect = document.getElementById('qualitySelect');
+        const hlsStatusPill = document.getElementById('hls-status-pill');
+        const liveIndicator = document.getElementById('live-indicator');
+        const engineStatus = document.getElementById('engine-status');
+        const clearInputBtn = document.getElementById('clearInput');
+        const placeholderOverlay = document.getElementById('video-placeholder');
+        
+        let hls = null;
 
-        // --- Utility Functions for UI/Messaging ---
-
-        /**
-         * Shows a message in the custom message box UI.
-         * @param {string} message - The text to display.
-         * @param {string} type - 'success', 'error', or 'info'.
-         */
-        function showMessage(message, type) {
-            messageBox.innerHTML = message;
-            messageBox.classList.remove('hidden', 'bg-green-600', 'bg-red-600', 'bg-yellow-600');
-            messageBoxClose.style.display = 'block';
-
-            if (type === 'error') {
-                messageBox.classList.add('bg-red-600');
-                messageBox.style.color = '#FFFFFF';
-            } else if (type === 'success') {
-                messageBox.classList.add('bg-green-600');
-                messageBox.style.color = '#FFFFFF';
-            } else { // info
-                messageBox.classList.add('bg-yellow-600');
-                messageBox.style.color = '#000000';
+        // --- Toast Notification System ---
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            
+            // Colors based on type
+            let bgClass = 'bg-gray-800 border-gray-600';
+            let iconClass = 'fa-info-circle text-blue-400';
+            
+            if (type === 'success') {
+                bgClass = 'bg-green-900/90 border-green-500';
+                iconClass = 'fa-check-circle text-green-400';
+            } else if (type === 'error') {
+                bgClass = 'bg-red-900/90 border-red-500';
+                iconClass = 'fa-triangle-exclamation text-red-400';
             }
+
+            toast.className = `toast pointer-events-auto flex items-center gap-3 px-4 py-3 rounded-lg border ${bgClass} text-white shadow-xl min-w-[300px] backdrop-blur-md`;
+            toast.innerHTML = `
+                <i class="fa-solid ${iconClass} text-lg"></i>
+                <div class="flex-1 text-sm font-medium">${message}</div>
+                <button onclick="this.parentElement.remove()" class="text-gray-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+            `;
+
+            container.appendChild(toast);
+
+            // Auto remove after 4 seconds
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateY(10px)';
+                setTimeout(() => toast.remove(), 300);
+            }, 4000);
         }
 
-        function hideMessage() {
-            messageBox.classList.add('hidden');
-            messageBoxClose.style.display = 'none';
-        }
+        // --- Player Logic ---
 
-        // --- HLS.js Initialization and Logic ---
-
-        function loadM3u8Stream(url) {
-            hideMessage();
-            if (!url) {
-                showMessage("Please enter a valid M3U8 URL.", 'info');
-                return;
+        function initPlayer(url) {
+            // UI Reset
+            hlsStatusPill.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin mr-2"></i>Loading...';
+            hlsStatusPill.className = "px-3 py-1 rounded-full text-xs font-mono border border-yellow-600 text-yellow-400 bg-yellow-900/20";
+            hlsStatusPill.classList.remove('hidden');
+            liveIndicator.classList.add('hidden'); // Hide until confirmed
+            placeholderOverlay.style.opacity = '0';
+            
+            // Cleanup previous instance
+            if (hls) {
+                hls.destroy();
             }
 
-            // Clean up previous HLS instance if it exists
-            if (video.hlsInstance) {
-                video.hlsInstance.destroy();
-                video.hlsInstance = null;
-            }
-
-            // 1. Check if HLS is supported
             if (Hls.isSupported()) {
-                hlsStatus.textContent = 'Supported';
-                hlsStatus.style.color = '#4ade80'; // Green
-
-                // 2. Initialize HLS.js
-                const hls = new Hls();
-                video.hlsInstance = hls; // Store instance for cleanup
-
-                // 3. Bind events
-                hls.on(Hls.Events.MEDIA_ATTACHED, function () {
-                    console.log("Media attached to HLS");
-                });
-                
-                hls.on(Hls.Events.MANIFEST_PARSED, function (event, data) {
-                    console.log("Manifest parsed, found " + data.levels.length + " quality levels");
-                    showMessage(`Stream loaded successfully with ${data.levels.length} quality levels.`, 'success');
-                    video.play().catch(e => console.error("Autoplay failed:", e));
-                });
-                
-                hls.on(Hls.Events.ERROR, function (event, data) {
-                    let errorMsg = `HLS Error: ${data.details}. Fatal: ${data.fatal}.`;
-                    console.error(errorMsg, data);
-
-                    if (data.fatal) {
-                        switch (data.type) {
-                            case Hls.ErrorTypes.NETWORK_ERROR:
-                                // Try to recover network error
-                                console.log("Fatal network error detected, trying to recover...");
-                                hls.startLoad();
-                                break;
-                            case Hls.ErrorTypes.MEDIA_ERROR:
-                                console.log("Fatal media error detected, trying to recover...");
-                                hls.recoverMediaError();
-                                break;
-                            default:
-                                // Cannot recover, destroy HLS instance
-                                showMessage(`Fatal Error: Could not load stream. ${errorMsg}`, 'error');
-                                hls.destroy();
-                                break;
-                        }
-                    } else {
-                        showMessage(`Warning: Non-fatal error occurred: ${data.details}.`, 'info');
-                    }
+                hls = new Hls({
+                    debug: false,
+                    enableWorker: true,
+                    lowLatencyMode: true,
                 });
 
-                // 4. Load stream
                 hls.loadSource(url);
                 hls.attachMedia(video);
 
+                // 1. MANIFEST PARSED (Stream Found)
+                hls.on(Hls.Events.MANIFEST_PARSED, function (event, data) {
+                    engineStatus.innerText = `Engine: HLS.js | Levels: ${data.levels.length}`;
+                    updateQualityOptions(data.levels);
+                    
+                    hlsStatusPill.innerHTML = '<i class="fa-solid fa-check mr-2"></i>Ready';
+                    hlsStatusPill.className = "px-3 py-1 rounded-full text-xs font-mono border border-green-600 text-green-400 bg-green-900/20";
+                    
+                    showToast('Stream initialized successfully', 'success');
+                    video.play().catch(() => showToast('Click play to start video (Autoplay blocked)', 'info'));
+                });
+
+                // 2. LEVEL LOADED (Check if Live)
+                hls.on(Hls.Events.LEVEL_LOADED, function (event, data) {
+                    if (data.details.live) {
+                        liveIndicator.classList.add('flex');
+                        liveIndicator.classList.remove('hidden');
+                    } else {
+                        liveIndicator.classList.add('hidden');
+                        liveIndicator.classList.remove('flex');
+                    }
+                });
+
+                // 3. ERROR HANDLING
+                hls.on(Hls.Events.ERROR, function (event, data) {
+                    if (data.fatal) {
+                        switch (data.type) {
+                            case Hls.ErrorTypes.NETWORK_ERROR:
+                                engineStatus.innerText = "Error: Network";
+                                showToast('Network error, trying to recover...', 'error');
+                                hls.startLoad();
+                                break;
+                            case Hls.ErrorTypes.MEDIA_ERROR:
+                                engineStatus.innerText = "Error: Media Decoding";
+                                showToast('Media error, recovering...', 'error');
+                                hls.recoverMediaError();
+                                break;
+                            default:
+                                engineStatus.innerText = "Error: Fatal";
+                                showToast('Fatal Error: Cannot play stream.', 'error');
+                                hls.destroy();
+                                break;
+                        }
+                    }
+                });
+
             } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-                // For native HLS support (e.g., iOS Safari)
-                hlsStatus.textContent = 'Native Supported';
-                hlsStatus.style.color = '#60a5fa'; // Light Blue
-                showMessage("Using native HLS support.", 'info');
+                // Native Safari Support
                 video.src = url;
                 video.addEventListener('loadedmetadata', function() {
-                    video.play().catch(e => console.error("Autoplay failed:", e));
+                    video.play();
+                    engineStatus.innerText = "Engine: Native (Safari)";
+                    showToast('Loaded via Native HLS', 'success');
                 });
             } else {
-                hlsStatus.textContent = 'Not Supported';
-                hlsStatus.style.color = '#f87171'; // Red
-                showMessage("Your browser does not support HLS playback.", 'error');
+                showToast('Browser does not support HLS', 'error');
             }
         }
 
-        // --- Event Listeners ---
-        
-        loadButton.addEventListener('click', () => {
-            const url = streamUrlInput.value.trim();
-            loadM3u8Stream(url);
+        // Populate the Quality Dropdown
+        function updateQualityOptions(levels) {
+            qualitySelect.innerHTML = ''; // Clear existing
+            
+            // Add Auto Option
+            const autoOpt = document.createElement('option');
+            autoOpt.value = -1;
+            autoOpt.text = 'Auto (Adaptive)';
+            qualitySelect.appendChild(autoOpt);
+
+            // Add Levels (Reverse order for highest first)
+            levels.forEach((level, index) => {
+                const opt = document.createElement('option');
+                opt.value = index;
+                // Calculate resolution text
+                const height = level.height;
+                const bitrate = (level.bitrate / 1000).toFixed(0);
+                opt.text = `${height}p (${bitrate}kbps)`;
+                qualitySelect.appendChild(opt);
+            });
+
+            if (levels.length > 0) {
+                qualitySelect.disabled = false;
+            }
+        }
+
+        // Change Quality
+        qualitySelect.addEventListener('change', (e) => {
+            if (hls) {
+                hls.currentLevel = parseInt(e.target.value);
+                const text = e.target.options[e.target.selectedIndex].text;
+                showToast(`Quality switched to: ${text}`, 'info');
+            }
         });
 
-        messageBoxClose.addEventListener('click', hideMessage);
+        // Quick Load Function for Test Buttons
+        function quickLoad(url) {
+            streamUrlInput.value = url;
+            initPlayer(url);
+        }
 
-        // --- Initial Load ---
-        window.onload = function() {
+        // Input Interactions
+        streamUrlInput.addEventListener('input', () => {
+            clearInputBtn.style.display = streamUrlInput.value ? 'flex' : 'none';
+        });
+
+        clearInputBtn.addEventListener('click', () => {
+            streamUrlInput.value = '';
+            clearInputBtn.style.display = 'none';
+            streamUrlInput.focus();
+        });
+
+        loadButton.addEventListener('click', () => {
             const url = streamUrlInput.value.trim();
             if (url) {
-                // If the user somehow populated the field, load it.
-                loadM3u8Stream(url);
+                initPlayer(url);
             } else {
-                // Display initial instructions
-                showMessage("Please enter an M3U8 stream URL and click 'Load Stream' to begin.", 'info');
-                hlsStatus.textContent = 'Ready';
-                hlsStatus.style.color = '#fff';
+                showToast('Please enter a valid URL', 'error');
             }
-        };
-        
-    </script>
+        });
 
+        // Enter key to load
+        streamUrlInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                loadButton.click();
+            }
+        });
+
+    </script>
 </body>
 </html>
-
